@@ -1,0 +1,185 @@
+#include <stdio.h>
+#include <string.h>
+#define CAPACIDADE_PRODUCTS 50
+#define CAPACIDADE_CARRINHO 50
+
+typedef struct {
+    int cod;
+    char name[30];
+    float preco;
+} Product;
+
+typedef struct {
+    Product product;
+    int quant;
+} Carrinho;
+
+Product products[CAPACIDADE_PRODUCTS];
+Carrinho carrinho[CAPACIDADE_CARRINHO];
+int totalProducts = 0;
+int totalCarrinho = 0;
+
+void infoProduct(Product prod) {
+    printf("Codigo: %d, Nome: %s, Preco: %.2f\n", prod.cod, prod.name, prod.preco);
+}
+
+int temNoCarrinho(int cod) {
+    for (int i = 0; i < totalCarrinho; i++) {
+        if (carrinho[i].product.cod == cod) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+Product pegarProductPorCod(int cod) {
+    for (int i = 0; i < totalProducts; i++) {
+        if (products[i].cod == cod) {
+            return products[i];
+        }
+    }
+    Product vazio = {0, "", 0.0}; 
+    return vazio;
+}
+
+void cadastrarProduct() {
+    if (totalProducts >= CAPACIDADE_PRODUCTS) {
+        printf("Capacidade atingida!\n");
+        return;
+    }
+    Product novoProduct;
+    printf("Insira o codigo do produto: ");
+    scanf("%d", &novoProduct.cod);
+
+    if (pegarProductPorCod(novoProduct.cod).cod != 0) {
+        printf("Produto ja existente!\n");
+        return;
+    }
+
+    printf("Insira o nome do produto: ");
+    scanf("%s", novoProduct.name);
+    printf("Insira o preco do produto: ");
+    scanf("%f", &novoProduct.preco);
+
+    products[totalProducts] = novoProduct;
+    totalProducts++;
+    printf("Produto cadastrado!\n");
+}
+
+void listarProducts() {
+    if (totalProducts == 0) {
+        printf("Sem produtos cadastrados.\n");
+        return;
+    }
+    printf("Produtos:\n");
+    for (int i = 0; i < totalProducts; i++) {
+        infoProduct(products[i]);
+    }
+}
+
+void comprarProduct() {
+    if (totalProducts == 0) {
+        printf("Sem produtos cadastrados.\n");
+        return;
+    }
+    
+    int cod, quant;
+    printf("Insira o codigo do produto que deseja: ");
+    scanf("%d", &cod);
+    
+    Product prod = pegarProductPorCod(cod);
+    if (prod.cod == 0) {
+        printf("Produto inexistente!\n");
+        return;
+    }
+    
+    printf("Digite a quantidade: ");
+    scanf("%d", &quant);
+    
+    int indexCarrinho = temNoCarrinho(cod);
+    if (indexCarrinho != -1) {
+        carrinho[indexCarrinho].quant += quant;
+        printf("Quantidade atualizada!\n");
+    } else {
+        Carrinho novoItem;
+        novoItem.product = prod;
+        novoItem.quant = quant;
+        carrinho[totalCarrinho] = novoItem;
+        totalCarrinho++;
+        printf("Produto adicionado!\n");
+    }
+}
+
+void visualizarCarrinho() {
+    if (totalCarrinho == 0) {
+        printf("Carrinho vazio.\n");
+        return;
+    }
+    printf("Carrinho de Compras:\n");
+    for (int i = 0; i < totalCarrinho; i++) {
+        printf("Produto: %s, Quantidade: %d, Preco unitario: %.2f, Total: %.2f\n",
+               carrinho[i].product.name, carrinho[i].quant,
+               carrinho[i].product.preco, carrinho[i].quant * carrinho[i].product.preco);
+    }
+}
+
+void fecharPedido() {
+    if (totalCarrinho == 0) {
+        printf("Carrinho vazio, impossivel fechar.\n");
+        return;
+    }
+    float totalCompra = 0;
+    printf("Fatura:\n");
+    for (int i = 0; i < totalCarrinho; i++) {
+        float totalProduct = carrinho[i].quant * carrinho[i].product.preco;
+        printf("%s x%d: R$ %.2f\n", carrinho[i].product.name, carrinho[i].quant, totalProduct);
+        totalCompra += totalProduct;
+    }
+    printf("Valor da compra: R$ %.2f\n", totalCompra);
+    
+    totalCarrinho = 0;
+    printf("Pedido fechado!\n");
+}
+
+void menu() {
+    int opcao;
+    do {
+        printf("\n*-*-*-*-* Sistema de Supermercado *-*-*-*-*\n");
+        printf("1- Cadastrar Produto\n");
+        printf("2- Listar Produtos\n");
+        printf("3- Comprar Produto\n");
+        printf("4- Visualizar Carrinho\n");
+        printf("5- Fechar Pedido\n");
+        printf("6- Sair\n");
+        printf("Escolha uma opcao: ");
+        scanf("%d", &opcao);
+        
+        switch(opcao) {
+            case 1:
+                cadastrarProduct();
+                break;
+            case 2:
+                listarProducts();
+                break;
+            case 3:
+                comprarProduct();
+                break;
+            case 4:
+                visualizarCarrinho();
+                break;
+            case 5:
+                fecharPedido();
+                break;
+            case 6:
+                printf("Bye Bye...\n");
+                break;
+            default:
+                printf("Opcao invalida!\n");
+        }
+    } while (opcao != 6);
+}
+
+int main() {
+    menu();
+return 0;
+}
